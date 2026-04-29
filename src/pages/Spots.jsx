@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 
 export default function Spots() {
+  const navigate = useNavigate()
   const [categories, setCategories] = useState([])
   const [areas, setAreas] = useState([])
   const [spots, setSpots] = useState([])
@@ -26,11 +28,13 @@ export default function Spots() {
     let q = supabase
       .from('spots')
       .select(`
-        id, name, description, cover_image_url, price_level, favorite_count,
+        id, name, description, cover_image_url, price_level, favorite_count, is_featured,
+        korean_menu, card_payment, nearest_station,
         category:categories(id, name_ko, icon),
         area:areas(id, name_ko)
       `)
       .eq('status', 'approved')
+      .order('is_featured', { ascending: false })
       .order('favorite_count', { ascending: false })
       .limit(50)
 
@@ -47,7 +51,7 @@ export default function Spots() {
     <div className="page">
       <header className="page__header">
         <h1 className="page__title">스팟</h1>
-        <p className="page__subtitle">현지인이 추천하는 후쿠오카</p>
+        <p className="page__subtitle">한국인 여행자를 위한 큐레이션</p>
       </header>
 
       {/* 카테고리 필터 */}
@@ -93,7 +97,14 @@ export default function Spots() {
       ) : (
         <ul className="spot-list">
           {spots.map(s => (
-            <li key={s.id} className="spot-card">
+            <li 
+              key={s.id} 
+              className="spot-card spot-card--clickable"
+              onClick={() => navigate(`/spots/${s.id}`)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => { if (e.key === 'Enter') navigate(`/spots/${s.id}`) }}
+            >
               {s.cover_image_url
                 ? <img className="spot-card__img" src={s.cover_image_url} alt={s.name} loading="lazy" />
                 : <div className="spot-card__img spot-card__img--placeholder">{s.category?.icon ?? '📍'}</div>}
@@ -101,9 +112,18 @@ export default function Spots() {
                 <div className="spot-card__meta">
                   <span>{s.category?.icon} {s.category?.name_ko}</span>
                   <span>· {s.area?.name_ko}</span>
+                  {s.is_featured && <span className="badge-featured">★</span>}
                 </div>
                 <h3 className="spot-card__name">{s.name}</h3>
                 {s.description && <p className="spot-card__desc">{s.description}</p>}
+
+                {/* 한국인 친화 뱃지 */}
+                <div className="spot-card__korean-badges">
+                  {s.korean_menu && <span className="kbadge kbadge--korean">🇰🇷 한국어</span>}
+                  {s.card_payment && <span className="kbadge kbadge--card">💳 카드</span>}
+                  {s.nearest_station && <span className="kbadge kbadge--station">🚇 {s.nearest_station}</span>}
+                </div>
+
                 <div className="spot-card__footer">
                   <span>❤️ {s.favorite_count}</span>
                   {s.price_level && <span className="price-level">{
