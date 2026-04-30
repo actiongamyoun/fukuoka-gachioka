@@ -869,3 +869,116 @@ input { font-family: inherit; }
   transform: scale(.99);
   border-color: var(--color-primary);
 }
+/* =========================================================
+   Step 5-7 Map 추가 스타일
+   지역 약도 + 인터랙티브 핀
+   ========================================================= */
+
+/* 약도 보유 지역 칩 표시 */
+.chip__map-badge {
+  font-size: 11px;
+  margin-left: 2px;
+  opacity: 0.8;
+}
+
+/* 약도 섹션 (스팟 목록 페이지에 등장) */
+.area-map-section {
+  margin: 0 16px 24px;
+  background: white;
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+  animation: map-fade-in .25s ease-out;
+}
+
+@keyframes map-fade-in {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.area-map-section__title {
+  font-size: 15px;
+  font-weight: 800;
+  padding: 12px 16px 4px;
+  letter-spacing: -.3px;
+}
+.area-map-section__sub {
+  font-size: 11px;
+  color: var(--color-text-sub);
+  padding: 0 16px 8px;
+}
+
+/* AreaMap 컴포넌트 */
+.area-map {
+  position: relative;
+}
+
+.area-map__svg {
+  background: #d4e8f0;
+}
+.area-map__svg svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* 핀 호버 효과 */
+.area-map__svg .pin {
+  cursor: pointer;
+  transition: transform .15s;
+}
+.area-map__svg .pin:hover,
+.area-map__svg .pin:active {
+  transform: scale(1.12);
+}
+
+/* 범례 */
+.area-map__legend {
+  padding: 10px 14px;
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  font-size: 11px;
+  justify-content: center;
+  color: var(--color-text-sub);
+}
+.area-map__legend .legend-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.area-map__legend .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.dot--food { background: #E94E3C; }
+.dot--shop { background: #F59E0B; }
+.dot--stay { background: #7C3AED; }
+.dot--sight { background: #059669; }
+.dot--station { background: #1E40AF; }
+
+/* 정보 토스트 (역/신사 등 매핑 안 된 핀) */
+.map-toast {
+  position: absolute;
+  bottom: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,.85);
+  color: white;
+  padding: 10px 18px;
+  border-radius: 999px;
+  font-size: 13px;
+  cursor: pointer;
+  animation: toast-in .2s ease-out;
+}
+
+.map-loading {
+  padding: 40px 20px;
+  text-align: center;
+  color: var(--color-text-sub);
+  background: #d4e8f0;
+}
