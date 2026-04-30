@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import AreaMap from '../components/AreaMap'
 
 export default function Spots() {
   const navigate = useNavigate()
@@ -10,6 +11,9 @@ export default function Spots() {
   const [selectedCategory, setSelectedCategory] = useState(null)
   const [selectedArea, setSelectedArea] = useState(null)
   const [loading, setLoading] = useState(true)
+
+  // 약도 보유한 지역 slug (Step 5-7 Map에서 입력된 5개)
+  const AREAS_WITH_MAP = ['hakata', 'tenjin', 'nakasu', 'dazaifu', 'yufuin']
 
   // 마스터 데이터 로드
   useEffect(() => {
@@ -22,7 +26,7 @@ export default function Spots() {
     })
   }, [])
 
-  // 스팟 목록 (필터 변경 시 재조회)
+  // 스팟 목록
   useEffect(() => {
     setLoading(true)
     let q = supabase
@@ -31,7 +35,7 @@ export default function Spots() {
         id, name, description, cover_image_url, price_level, favorite_count, is_featured,
         korean_menu, card_payment, nearest_station,
         category:categories(id, name_ko, icon),
-        area:areas(id, name_ko)
+        area:areas(id, name_ko, slug)
       `)
       .eq('status', 'approved')
       .order('is_featured', { ascending: false })
@@ -39,7 +43,7 @@ export default function Spots() {
       .limit(50)
 
     if (selectedCategory) q = q.eq('category_id', selectedCategory)
-    if (selectedArea) q = q.eq('area_id', selectedArea)
+    if (selectedArea) q = q.eq('area_id', selectedArea.id)
 
     q.then(({ data, error }) => {
       if (!error) setSpots(data ?? [])
@@ -77,14 +81,31 @@ export default function Spots() {
           className={`chip chip--small ${!selectedArea ? 'is-active' : ''}`}
           onClick={() => setSelectedArea(null)}
         >전체 지역</button>
-        {areas.map(a => (
-          <button
-            key={a.id}
-            className={`chip chip--small ${selectedArea === a.id ? 'is-active' : ''}`}
-            onClick={() => setSelectedArea(a.id)}
-          >{a.name_ko}</button>
-        ))}
+        {areas.map(a => {
+          const hasMap = AREAS_WITH_MAP.includes(a.slug)
+          return (
+            <button
+              key={a.id}
+              className={`chip chip--small ${selectedArea?.id === a.id ? 'is-active' : ''}`}
+              onClick={() => setSelectedArea(a)}
+              title={hasMap ? '약도 있음' : ''}
+            >
+              {a.name_ko} {hasMap && <span className="chip__map-badge">🗺️</span>}
+            </button>
+          )
+        })}
       </div>
+
+      {/* 지역 약도 (지역 선택했고 약도 있을 때만 표시) */}
+      {selectedArea && AREAS_WITH_MAP.includes(selectedArea.slug) && (
+        <div className="area-map-section">
+          <h2 className="area-map-section__title">
+            🗺️ {selectedArea.name_ko} 약도
+          </h2>
+          <p className="area-map-section__sub">핀을 누르면 상세 정보로 이동</p>
+          <AreaMap areaSlug={selectedArea.slug} />
+        </div>
+      )}
 
       {/* 스팟 카드 목록 */}
       {loading ? (
@@ -97,8 +118,8 @@ export default function Spots() {
       ) : (
         <ul className="spot-list">
           {spots.map(s => (
-            <li 
-              key={s.id} 
+            <li
+              key={s.id}
               className="spot-card spot-card--clickable"
               onClick={() => navigate(`/spots/${s.id}`)}
               role="button"
@@ -117,7 +138,6 @@ export default function Spots() {
                 <h3 className="spot-card__name">{s.name}</h3>
                 {s.description && <p className="spot-card__desc">{s.description}</p>}
 
-                {/* 한국인 친화 뱃지 */}
                 <div className="spot-card__korean-badges">
                   {s.korean_menu && <span className="kbadge kbadge--korean">🇰🇷 한국어</span>}
                   {s.card_payment && <span className="kbadge kbadge--card">💳 카드</span>}
@@ -127,7 +147,7 @@ export default function Spots() {
                 <div className="spot-card__footer">
                   <span>❤️ {s.favorite_count}</span>
                   {s.price_level && <span className="price-level">{
-                    { low: '₩', mid: '₩₩', high: '₩₩₩' }[s.price_level]
+                    { low: '¥', mid: '¥¥', high: '¥¥¥' }[s.price_level]
                   }</span>}
                 </div>
               </div>
