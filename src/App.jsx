@@ -16,14 +16,15 @@ export default function App() {
         <Routes>
           <Route path="/auth/callback" element={<AuthCallback />} />
           <Route element={<Layout />}>
-            <Route index element={<Navigate to="/spots" replace />} />
+            {/* 메인은 통합 핫스팟 페이지 */}
+            <Route index element={<Spots />} />
             <Route path="/spots" element={<Spots />} />
             <Route path="/spots/:id" element={<SpotDetail />} />
             <Route path="/chat" element={<Chat />} />
             <Route path="/transport" element={<Transport />} />
             <Route path="/transport/:slug" element={<RouteDetail />} />
             <Route path="/my" element={<My />} />
-            <Route path="*" element={<Navigate to="/spots" replace />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
         </Routes>
       </BrowserRouter>
