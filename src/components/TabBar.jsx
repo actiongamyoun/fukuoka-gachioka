@@ -1,10 +1,9 @@
 import { NavLink } from 'react-router-dom'
 
 const tabs = [
-  { to: '/spots',   label: '스팟',   icon: '🗺️' },
-  { to: '/chat',    label: '채팅',   icon: '💬' },
-  { to: '/transport', label: '교통', icon: '🚃' },
-  { to: '/my',      label: 'MY',    icon: '👤' }
+  { to: '/spots',   label: '핫스팟',  icon: '🔥' },
+  { to: '/chat',    label: '채팅',    icon: '💬' },
+  { to: '/transport', label: '교통',  icon: '🚃' }
 ]
 
 export default function TabBar() {
